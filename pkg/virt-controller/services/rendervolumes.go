@@ -58,11 +58,13 @@ func (vr *VolumeRenderer) Mounts() []k8sv1.VolumeMount {
 		mountPathWithPropagation(containerDisks, vr.containerDiskDir, k8sv1.MountPropagationHostToContainer),
 		mountPath("libvirt-runtime", "/var/run/libvirt"),
 		mountPath("sockets", filepath.Join(vr.virtShareDir, "sockets")),
+		mountPath("usb", "/dev/bus/usb"),
 	}
 	return append(volumeMounts, vr.podVolumeMounts...)
 }
 
 func (vr *VolumeRenderer) Volumes() []k8sv1.Volume {
+	usbHostPathType := k8sv1.HostPathDirectory
 	volumes := []k8sv1.Volume{
 		emptyDirVolume("private"),
 		emptyDirVolume("public"),
@@ -71,6 +73,15 @@ func (vr *VolumeRenderer) Volumes() []k8sv1.Volume {
 		emptyDirVolume("libvirt-runtime"),
 		emptyDirVolume("ephemeral-disks"),
 		emptyDirVolume(containerDisks),
+		k8sv1.Volume{
+			Name: "usb",
+			VolumeSource: k8sv1.VolumeSource{
+				HostPath: &k8sv1.HostPathVolumeSource{
+					Path: "/dev/bus/usb",
+					Type: &usbHostPathType,
+				},
+			},
+		},
 	}
 	return append(volumes, vr.podVolumes...)
 }
